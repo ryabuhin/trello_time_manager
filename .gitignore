@@ -1,0 +1,7 @@
+.vscode
+.idea
+__pycache__/
+*.pyc
+bot_config.json
+*.pem
+*.key
