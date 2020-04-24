@@ -29,11 +29,37 @@ For correct work of application it's necessary to prepare the following configur
 
 ```
 { 
+    "ip_address": "<PUBLIC HOST ADDRESS>",
     "trello_key": "<TRELLO API KEY>",
     "trello_token": "<TRELLO TOKEN>",
+    "trello_secured_enpoint": "<RANDOM WORD TO SECURE ENDPOINT>",
+    "trello_dashboard_fullname": "<DASHBOARD NAME>",
+    "trello_daily_plan_list_name_regexp": "<DAILY COLUMN NAME IN REGEXP>",
+    "trello_weekly_plan_list_name_regexp": "<WEEKLY COLUMN NAME IN REGEXP>",
+    "trello_monthly_plan_list_name_regexp": "<MONTHLY COLUMN NAME IN REGEXP>",
+    "trello_year_plan_list_name_regexp": "<YEAR COLUMN NAME IN REGEXP>",
     "telegram_token": "<TELEGRAM TOKEN>",
     "server_listen_interface": "<0.0.0.0 OR SPECIFIC IPv4 INTERFACE TO LISTEN TRAFFIC>",
     "mongo_path": "<MONGO_DB URL WITH PROVIDED CREDENTIALS>"
+}
+```
+
+Here is an example of a working **./bot_config.json**:
+
+```
+{
+    "ip_address": "10.0.34.2",
+    "trello_key": "ec40882ffba956174d0892b5752d9979",
+    "trello_token": "0987b26546931ec40882ffba969310856174d0892b5752d997933d93aef1becf",
+    "trello_secured_enpoint": "9310856174d0892b5752d997933d93a40882ffa7",
+    "trello_dashboard_fullname": "ProductivityDashboard",
+    "trello_daily_plan_list_name_regexp": "^Daily Plan \\(([0-9]{1,2}.[0-9]{1,2})\\)$",
+    "trello_weekly_plan_list_name_regexp": "^Weekly Plan \\(([0-9]{1,2}.[0-9]{1,2}) - ([0-9]{1,2}.[0-9]{1,2})\\)$",
+    "trello_monthly_plan_list_name_regexp": "^Monthly Plan \\(([0-9]{1,2}.[0-9]{1,2})\\)$",
+    "trello_year_plan_list_name_regexp": "^Plans for this year \\(([0-9]{4})\\)",
+    "telegram_token": "8456306476:d9793d93a401713a7933d93a4882f085617",
+    "server_listen_interface": "0.0.0.0",
+    "mongo_path": "mongodb://iam:admin@127.0.0.1:27017/lukeskywalker"
 }
 ```
 
@@ -49,7 +75,7 @@ docker-compose -f ./infra-compose up -d
 * Run application by provided shell script:
 
 ```
-bash ./run_bot.sh "${ip_address}"
+bash ./run_bot.sh
 ```
 
 ## Authors

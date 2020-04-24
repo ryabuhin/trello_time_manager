@@ -1,6 +1,8 @@
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from services.telegram_api_utils import TelegramApiUtils
+from datetime import datetime, timedelta, timezone
 import json
+import re
 
 
 class TrelloActivityHandler(BaseHTTPRequestHandler):
@@ -61,7 +63,7 @@ class TrelloActivityHandler(BaseHTTPRequestHandler):
     def do_HEAD(self):
         print("[INFO] Received HEAD request on {path}".format(path = self.path))
 
-        if self.path != str("/defc7f7c274c075a0dac5837ff3b0eb864c03ce5"):
+        if self.path[1:] != self.server.trello_secured_endpoint:
             self.send_response(401)
             self.send_header('Content-type','text/html')
             self.end_headers()
@@ -75,7 +77,7 @@ class TrelloActivityHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         print("[INFO] Received GET request on {path}".format(path = self.path))
 
-        if self.path != str("/defc7f7c274c075a0dac5837ff3b0eb864c03ce5"):
+        if self.path[1:] != self.server.trello_secured_endpoint:
             self.send_response(401)
             self.send_header('Content-type','text/html')
             self.end_headers()
@@ -88,8 +90,8 @@ class TrelloActivityHandler(BaseHTTPRequestHandler):
 
     def do_POST(self):
         print("[INFO] Received POST request on {path}".format(path = self.path))
-        
-        if self.path != str("/defc7f7c274c075a0dac5837ff3b0eb864c03ce5"):
+
+        if self.path[1:] != self.server.trello_secured_endpoint:
             self.send_response(401)
             self.send_header('Content-type','text/html')
             self.end_headers()
@@ -104,13 +106,15 @@ class TrelloActivityHandler(BaseHTTPRequestHandler):
             actionType = received_action_type, actionSubtype = received_action_subtype
         ))
 
-        # dashboard_name = trello_dashboard_update_info['model']['name']
         action_initiator_fullname = trello_dashboard_update_info['action']['memberCreator']['fullName']
         action_initiator_username = trello_dashboard_update_info['action']['memberCreator']['username']
 
         telegramApiUtils = TelegramApiUtils(self.server.telegram_token)
         result_message = ''
-        card_id = trello_dashboard_update_info['action']['data']['card']['id']
+        
+        card_id = ''
+        try: card_id = trello_dashboard_update_info['action']['data']['card']['id']
+        except: print("[ERROR] An exception occurred: can't get card identifier from the received update")
         if received_action_type == 'updateCard':
             action_card_shortlink = trello_dashboard_update_info['action']['data']['card']['shortLink']
             if received_action_subtype == 'action_move_card_from_list_to_list':
@@ -160,6 +164,39 @@ class TrelloActivityHandler(BaseHTTPRequestHandler):
                     initiatorFullName = action_initiator_fullname,
                     issueShortLink = action_card_shortlink
                 )
+            if received_action_subtype == 'action_added_a_due_date' or received_action_subtype == 'action_changed_a_due_date':
+                # ticket shoul be moved to the corresponding column
+                new_due_date = trello_dashboard_update_info['action']['data']['card']['due']
+
+                current_date = datetime.now(timezone(timedelta(0)))
+                local_timezone = current_date.astimezone().tzinfo
+
+                new_due_date = new_due_date.replace("Z", "+0000")
+                new_due_date_parsed = datetime.strptime(new_due_date, "%Y-%m-%dT%H:%M:%S.%f%z").astimezone(local_timezone)
+
+                if new_due_date_parsed.day < current_date.day:
+                    print("[DEBUG] Date has been expired")
+
+                if current_date.year == new_due_date_parsed.year:
+                    if current_date.month == new_due_date_parsed.month:
+                        weekly_plan_start_day = self.server.trello_api_utils.get_weekly_column_start_date().split(".")[0]
+                        weekly_plan_end_day = self.server.trello_api_utils.get_weekly_column_end_date().split(".")[0]
+                        if new_due_date_parsed.day >= int(weekly_plan_start_day) and new_due_date_parsed.day < int(weekly_plan_end_day):
+                            if new_due_date_parsed.day == current_date.day:
+                                print("[DEBUG] Ticket should be moved into the daily plan")
+                                self.server.trello_api_utils.trasfer_card_to_daily_column(card_id)
+                            else:
+                                print("[DEBUG] Ticket should be moved into the weekly plan")
+                                self.server.trello_api_utils.trasfer_card_to_weekly_column(card_id)
+                        elif new_due_date_parsed.day > current_date.day:
+                            print("[DEBUG] Ticket should be moved into the monthly plan")
+                            self.server.trello_api_utils.trasfer_card_to_monthly_column(card_id)
+                    else:
+                        print("[DEBUG] Ticket should be moved into the year plan")
+                        self.server.trello_api_utils.trasfer_card_to_year_column(card_id)
+                elif new_due_date_parsed.year > current_date.year:
+                    print("[DEBUG] Ticket should be moved into the year plan")
+                    self.server.trello_api_utils.trasfer_card_to_year_column(card_id)
 
         ### handle complete/incomplete stats of check-list elements
         if received_action_type == 'updateCheckItemStateOnCard':

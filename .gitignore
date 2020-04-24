@@ -5,3 +5,4 @@ __pycache__/
 bot_config.json
 *.pem
 *.key
+certs/
