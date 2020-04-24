@@ -44,12 +44,16 @@ for existingWebhookId in $(curl "https://api.trello.com/1/tokens/${trello_token}
         && printf "\n[INFO/BASH] Trello webhook with id ${existingWebhookId} was sucessfully deleted\n"
 done
 
+# receive dashboard id (and use it as idModel for webhook)
+found_board=$(curl "https://api.trello.com/1/members/me/boards?key=${trello_key}&token=${trello_token}" -s \
+    | jq ".[] | select (.name == \"${trello_dashboard_fullname}\")" -r)
+found_board_id=$(echo "$found_board" | jq -r .id)
+
 # register trello webhook
-## TODO: id modle should be received by curl using trello api !!!
 (sleep 2s && curl -XPOST "https://api.trello.com/1/tokens/${trello_token}/webhooks" -s \
     -H "Content-Type: application/json" \
     -d "{ \"key\": \"${trello_key}\", \"callbackURL\": \"http://${host_machine}:8444/${trello_secured_enpoint}\", 
-        \"idModel\":\"59a717c0234cca54c376ced0\", \"description\": \"${trello_dashboard_fullname} Dashboard Webhook for host: ${host_machine}\" }" | jq .) &
+        \"idModel\":\"${found_board_id}\", \"description\": \"${trello_dashboard_fullname} Dashboard Webhook for host: ${host_machine}\" }" | jq .) &
 
 cd ${script_path}/trello_bot && python3 ./trello_bot_main.py \
  "${server_listen_interace}"\
