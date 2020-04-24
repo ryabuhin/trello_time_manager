@@ -14,7 +14,7 @@ class TrelloDashboardCollectorScheduler(Thread):
     def __init__(self, trello_api_utils):
         Thread.__init__(self)
         self.trello_api_utils = trello_api_utils
-        schedule.every().day.at('17:10').do(self.moveTickets)
+        schedule.every().day.at('00:00').do(self.moveTickets)
 
     def moveTickets(self):
         # move all cards from 'Daily Plan' list into 'Weekly Plan'
