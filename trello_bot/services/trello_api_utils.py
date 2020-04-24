@@ -1,6 +1,8 @@
 import requests
 import json
 import re
+import time
+from datetime import datetime, timezone, timedelta
 
 
 class TrelloApiUtils: 
@@ -22,6 +24,7 @@ class TrelloApiUtils:
         self.trello_weekly_plan_list_name_regexp = trello_weekly_plan_list_name_regexp
         self.trello_monthly_plan_list_name_regexp = trello_monthly_plan_list_name_regexp
         self.trello_year_plan_list_name_regexp = trello_year_plan_list_name_regexp
+        self.trello_done_column_name_regexp = 'Done'
 
     ## TODO: methods below should be moved into the separate service
 
@@ -83,6 +86,68 @@ class TrelloApiUtils:
         )
         for yearCard in self.getAllCardsInfoByListId(year_plan_list_info['id']):
             self.trasfer_card_to_year_column(yearCard['id'])
+
+    # Move ticket to corresponding column by its due date
+    def transfer_ticket_to_corresponding_column_by_its_due_date(self, ticket_id):
+        ticket_due = self.getCardById(ticket_id)["due"]
+        if ticket_due == None:
+            return
+
+        current_date = datetime.now()
+        local_timezone = datetime.now(timezone(timedelta(0))).astimezone().tzinfo
+
+        new_due_date = ticket_due.replace("Z", "+0000")
+        new_due_date_parsed = datetime.strptime(new_due_date, "%Y-%m-%dT%H:%M:%S.%f%z").astimezone(local_timezone)
+
+        if new_due_date_parsed.day < current_date.day:
+            print("[DEBUG] Date has been expired")
+        else:
+            if current_date.year == new_due_date_parsed.year:
+                if current_date.month == new_due_date_parsed.month:
+                    weekly_plan_start_day = self.get_weekly_column_start_date().split(".")[0]
+                    weekly_plan_end_day = self.get_weekly_column_end_date().split(".")[0]
+                    if new_due_date_parsed.day >= int(weekly_plan_start_day) and new_due_date_parsed.day < int(weekly_plan_end_day):
+                        if new_due_date_parsed.day == current_date.day:
+                            print("[DEBUG] Ticket should be moved into the daily plan")
+                            self.trasfer_card_to_daily_column(ticket_id)
+                        else:
+                            print("[DEBUG] Ticket should be moved into the weekly plan")
+                            self.trasfer_card_to_weekly_column(ticket_id)
+                    elif new_due_date_parsed.day > current_date.day:
+                        print("[DEBUG] Ticket should be moved into the monthly plan")
+                        self.trasfer_card_to_monthly_column(ticket_id)
+                else:
+                    print("[DEBUG] Ticket should be moved into the year plan")
+                    self.trasfer_card_to_year_column(ticket_id)
+            elif new_due_date_parsed.year > current_date.year:
+                print("[DEBUG] Ticket should be moved into the year plan")
+                self.trasfer_card_to_year_column(ticket_id)
+        return
+
+    # Move all tickets to corresponding columns by their due dates
+    def transfer_tickets_to_corresponding_columns_by_its_due_dates(self):
+        done_column_id = self.get_pseudo_completed_cards_column_id()
+        actual_cards = self.get_dashboard_cards()
+        for card in actual_cards:
+            if card['idList'] != done_column_id and card['due'] != None and not card["dueComplete"]:
+                self.transfer_ticket_to_corresponding_column_by_its_due_date(card['id'])
+        return
+
+    # Get all tickets from application dashboard
+    def get_dashboard_cards(self):
+        resultEndpoint = TrelloApiUtils.TRELLO_API_ENDPOINT_BOARDS + "/{boardId}/cards"
+        httpResponse = requests.get(
+            url = resultEndpoint.format(boardId = self.get_application_dashboard_id()),
+            params = { 'key': self._api_key, 'token': self._api_token }
+        )
+        return httpResponse.json()
+
+    # Get identifier of column of pseudo completed tickets
+    def get_pseudo_completed_cards_column_id(self):
+        return self.getSpecificListInfoByNameRegexp(
+            self.get_application_dashboard_id(), 
+            self.trello_done_column_name_regexp
+        )["id"]
 
     # Get date of daily column
     def get_daily_column_date(self): 
