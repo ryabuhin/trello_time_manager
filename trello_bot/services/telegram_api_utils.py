@@ -5,7 +5,6 @@ import json
 class TelegramApiUtils:
 
 
-    TELEGRAM_BOT_TOKEN = ''
     TELEGRAM_API_ENDPOINT = 'https://api.telegram.org'
 
 

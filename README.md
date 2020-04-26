@@ -39,6 +39,7 @@ For correct work of application it's necessary to prepare the following configur
     "trello_monthly_plan_list_name_regexp": "<MONTHLY COLUMN NAME IN REGEXP>",
     "trello_year_plan_list_name_regexp": "<YEAR COLUMN NAME IN REGEXP>",
     "telegram_token": "<TELEGRAM TOKEN>",
+    "telegram_bot_invite_token": "<TELEGRAM BOT INVITE TOKEN>",
     "server_listen_interface": "<0.0.0.0 OR SPECIFIC IPv4 INTERFACE TO LISTEN TRAFFIC>",
     "mongo_path": "<MONGO_DB URL WITH PROVIDED CREDENTIALS>"
 }
@@ -58,6 +59,7 @@ Here is an example of a working **./bot_config.json**:
     "trello_monthly_plan_list_name_regexp": "^Monthly Plan \\(([0-9]{1,2}.[0-9]{1,2})\\)$",
     "trello_year_plan_list_name_regexp": "^Plans for this year \\(([0-9]{4})\\)",
     "telegram_token": "8456306476:d9793d93a401713a7933d93a4882f085617",
+    "telegram_bot_invite_token": "74d0892b265892b1ec493f198ffba",
     "server_listen_interface": "0.0.0.0",
     "mongo_path": "mongodb://iam:admin@127.0.0.1:27017/lukeskywalker"
 }

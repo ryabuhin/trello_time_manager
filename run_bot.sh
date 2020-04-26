@@ -9,6 +9,7 @@ trello_key="$(cat ${CONFIG_DIR_PATH}/bot_config.json | jq -r .trello_key)"
 trello_token="$(cat ${CONFIG_DIR_PATH}/bot_config.json | jq -r .trello_token)"
 trello_secured_enpoint=$(cat ${CONFIG_DIR_PATH}/bot_config.json | jq -r .trello_secured_enpoint)
 telegram_token="$(cat ${CONFIG_DIR_PATH}/bot_config.json | jq -r .telegram_token)"
+telegram_bot_invite_token="$(cat ${CONFIG_DIR_PATH}/bot_config.json | jq -r .telegram_bot_invite_token)"
 mongo_path="$(cat ${CONFIG_DIR_PATH}/bot_config.json | jq -r .mongo_path)"
 
 trello_dashboard_fullname="$(cat ${CONFIG_DIR_PATH}/bot_config.json | jq -r .trello_dashboard_fullname)"
@@ -67,3 +68,4 @@ cd ${script_path}/trello_bot && python3 ./trello_bot_main.py \
  "${trello_weekly_plan_list_name_regexp}"\
  "${trello_monthly_plan_list_name_regexp}"\
  "${trello_year_plan_list_name_regexp}"\
+ "${telegram_bot_invite_token}"

@@ -19,6 +19,7 @@ def main():
     PASSED_TRELLO_WEEKLY_PLAN_LIST_NAME_REGEXP = sys.argv[9]
     PASSED_TRELLO_MONTHLY_PLAN_LIST_NAME_REGEXP = sys.argv[10]
     PASSED_TRELLO_YEAR_PLAN_LIST_NAME_REGEXP = sys.argv[11]
+    PASSED_TELEGRAM_BOT_INVITE_TOKEN = sys.argv[12]
 
     mongodb_utils = MongoDBUtils(PASSED_MONGO_PATH)
     trello_api_utils = TrelloApiUtils(
@@ -51,6 +52,7 @@ def main():
     teledo = TelegramBotObserver(
         SERVER_LISTEN_INTERFACE,
         PASSED_TELEGRAM_TOKEN, 
+        PASSED_TELEGRAM_BOT_INVITE_TOKEN,
         trello_api_utils,
         mongodb_utils
     )

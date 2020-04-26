@@ -7,6 +7,7 @@ import re
 
 class TrelloActivityHandler(BaseHTTPRequestHandler):
 
+
     MESSAGE_PATTERN_FOR_UPDATED_OR_TRANSFERED_TICKETS = "'<b>{issue}</b>' issue was {action}. \
     \n\t\t" + u'\U0000270F' + " Previous {eventValue}: <s><i>{before}</i></s> \
     \n\t\t" + u'\U0001F4CC' + " New one: <u><i>{after}</i></u> \
