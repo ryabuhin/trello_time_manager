@@ -62,9 +62,10 @@ class TrelloActivityHandler(BaseHTTPRequestHandler):
     <a href=\"https://trello.com/c/{issueShortLink}\">click here to see more</a>"
 
     def do_HEAD(self):
-        print("[INFO] Received HEAD request on {path}".format(path = self.path))
+        print("[INFO] Received HEAD request on {path} from {ip}".format(path = self.path, ip = self.address_string()))
 
-        if self.path[1:] != self.server.trello_secured_endpoint:
+        if (self.address_string() not in self.server.trello_api_utils.trello_api_webhook_declared_official_ips
+                or self.path[1:] != self.server.trello_secured_endpoint):
             self.send_response(401)
             self.send_header('Content-type','text/html')
             self.end_headers()
@@ -76,9 +77,10 @@ class TrelloActivityHandler(BaseHTTPRequestHandler):
         return 
 
     def do_GET(self):
-        print("[INFO] Received GET request on {path}".format(path = self.path))
+        print("[INFO] Received GET request on {path} from {ip}".format(path = self.path, ip = self.address_string()))
 
-        if self.path[1:] != self.server.trello_secured_endpoint:
+        if (self.address_string() not in self.server.trello_api_utils.trello_api_webhook_declared_official_ips
+                or self.path[1:] != self.server.trello_secured_endpoint):
             self.send_response(401)
             self.send_header('Content-type','text/html')
             self.end_headers()
@@ -90,9 +92,10 @@ class TrelloActivityHandler(BaseHTTPRequestHandler):
         return
 
     def do_POST(self):
-        print("[INFO] Received POST request on {path}".format(path = self.path))
+        print("[INFO] Received POST request on {path} from {ip}".format(path = self.path, ip = self.address_string()))
 
-        if self.path[1:] != self.server.trello_secured_endpoint:
+        if (self.address_string() not in self.server.trello_api_utils.trello_api_webhook_declared_official_ips
+                or self.path[1:] != self.server.trello_secured_endpoint):
             self.send_response(401)
             self.send_header('Content-type','text/html')
             self.end_headers()

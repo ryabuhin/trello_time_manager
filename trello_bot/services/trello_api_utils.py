@@ -26,6 +26,7 @@ class TrelloApiUtils:
         self.trello_monthly_plan_list_name_regexp = trello_monthly_plan_list_name_regexp
         self.trello_year_plan_list_name_regexp = trello_year_plan_list_name_regexp
         self.trello_done_column_name_regexp = trello_done_list_name_regexp
+        self.trello_api_webhook_declared_official_ips = self.prepare_list_of_available_ips_officially_declared_by_trello()
 
     ## TODO: methods below should be moved into the separate service
 
@@ -347,3 +348,10 @@ class TrelloApiUtils:
             print("[ERROR] Column with new title: '{newTitle}' hasn't been updated".format(newTitle = new_title))
 
         return isSuccess
+
+    def prepare_list_of_available_ips_officially_declared_by_trello(self):
+        # also 18.234.32.224/28
+        list_of_available_ips = [ '107.23.104.115', '107.23.149.70', '54.152.166.250', '54.164.77.56', '54.209.149.230' ]
+        for ip_digit_mask in range(224, 240):
+            list_of_available_ips.append('18.234.32.{}'.format(ip_digit_mask))
+        return list_of_available_ips
