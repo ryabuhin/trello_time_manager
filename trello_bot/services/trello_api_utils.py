@@ -16,7 +16,8 @@ class TrelloApiUtils:
 
 
     def __init__(self, trello_key, trello_token, trello_dashboard_fullname, trello_daily_plan_list_name_regexp,
-                trello_weekly_plan_list_name_regexp, trello_monthly_plan_list_name_regexp, trello_year_plan_list_name_regexp): 
+                trello_weekly_plan_list_name_regexp, trello_monthly_plan_list_name_regexp, trello_year_plan_list_name_regexp,
+                trello_done_list_name_regexp): 
         self._api_key = trello_key
         self._api_token = trello_token
         self.trello_dashboard_fullname = trello_dashboard_fullname
@@ -24,7 +25,7 @@ class TrelloApiUtils:
         self.trello_weekly_plan_list_name_regexp = trello_weekly_plan_list_name_regexp
         self.trello_monthly_plan_list_name_regexp = trello_monthly_plan_list_name_regexp
         self.trello_year_plan_list_name_regexp = trello_year_plan_list_name_regexp
-        self.trello_done_column_name_regexp = 'Done'
+        self.trello_done_column_name_regexp = trello_done_list_name_regexp
 
     ## TODO: methods below should be moved into the separate service
 

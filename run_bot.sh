@@ -17,6 +17,7 @@ trello_daily_plan_list_name_regexp="$(cat ${CONFIG_DIR_PATH}/bot_config.json | j
 trello_weekly_plan_list_name_regexp="$(cat ${CONFIG_DIR_PATH}/bot_config.json | jq -r .trello_weekly_plan_list_name_regexp)"
 trello_monthly_plan_list_name_regexp="$(cat ${CONFIG_DIR_PATH}/bot_config.json | jq -r .trello_monthly_plan_list_name_regexp)"
 trello_year_plan_list_name_regexp="$(cat ${CONFIG_DIR_PATH}/bot_config.json | jq -r .trello_year_plan_list_name_regexp)"
+trello_done_list_name_regexp="$(cat ${CONFIG_DIR_PATH}/bot_config.json | jq -r .trello_done_list_name_regexp)"
 
 # generate new SSL certificates
 cert_dir="${script_path}/trello_bot/certs"
@@ -61,6 +62,7 @@ cd ${script_path}/trello_bot && python3 ./trello_bot_main.py \
  "${trello_key}"\
  "${trello_token}"\
  "${telegram_token}"\
+ "${telegram_bot_invite_token}"\
  "${mongo_path}"\
  "${trello_secured_enpoint}"\
  "${trello_dashboard_fullname}"\
@@ -68,4 +70,4 @@ cd ${script_path}/trello_bot && python3 ./trello_bot_main.py \
  "${trello_weekly_plan_list_name_regexp}"\
  "${trello_monthly_plan_list_name_regexp}"\
  "${trello_year_plan_list_name_regexp}"\
- "${telegram_bot_invite_token}"
+ "${trello_done_list_name_regexp}"
