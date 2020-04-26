@@ -16,7 +16,7 @@ class TrelloDashboardCollectorScheduler(Thread):
         self.trello_api_utils = trello_api_utils
         schedule.every().day.at('00:00').do(self.moveTickets)
         # move all tickets with assigned dates into corresponding columns 
-        schedule.every().day.at("00:00").do(self.trello_api_utils.transfer_tickets_to_corresponding_columns_by_its_due_dates)
+        schedule.every().day.at("00:10").do(self.trello_api_utils.transfer_tickets_to_corresponding_columns_by_its_due_dates)
         schedule.every().day.at("12:00").do(self.trello_api_utils.transfer_tickets_to_corresponding_columns_by_its_due_dates)
 
     def moveTickets(self):
