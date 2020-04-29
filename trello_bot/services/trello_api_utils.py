@@ -101,27 +101,30 @@ class TrelloApiUtils:
         new_due_date = ticket_due.replace("Z", "+0000")
         new_due_date_parsed = datetime.strptime(new_due_date, "%Y-%m-%dT%H:%M:%S.%f%z").astimezone(local_timezone)
 
-        if new_due_date_parsed.day < current_date.day:
+        if current_date.astimezone(local_timezone) > new_due_date_parsed:
             print("[DEBUG] Date has been expired")
         else:
-            if current_date.year == new_due_date_parsed.year:
-                if current_date.month == new_due_date_parsed.month:
-                    weekly_plan_start_day = self.get_weekly_column_start_date().split(".")[0]
-                    weekly_plan_end_day = self.get_weekly_column_end_date().split(".")[0]
-                    if new_due_date_parsed.day >= int(weekly_plan_start_day) and new_due_date_parsed.day < int(weekly_plan_end_day):
-                        if new_due_date_parsed.day == current_date.day:
-                            print("[DEBUG] Ticket should be moved into the daily plan")
-                            self.trasfer_card_to_daily_column(ticket_id)
-                        else:
-                            print("[DEBUG] Ticket should be moved into the weekly plan")
-                            self.trasfer_card_to_weekly_column(ticket_id)
-                    elif new_due_date_parsed.day > current_date.day:
-                        print("[DEBUG] Ticket should be moved into the monthly plan")
-                        self.trasfer_card_to_monthly_column(ticket_id)
+            year_plan_date = self.get_year_column_date()
+            monthly_plan_date_month = self.get_monthly_column_date().split('.')[0]
+            weekly_plan_start_date = datetime.strptime("{}.{}".format(
+                self.get_weekly_column_start_date(), year_plan_date), 
+                "%d.%m.%Y"
+            ).astimezone(local_timezone)
+            weekly_plan_end_date = datetime.strptime("{}.{}".format(
+                self.get_weekly_column_end_date(), year_plan_date), 
+                "%d.%m.%Y"
+            ).astimezone(local_timezone)
+            if new_due_date_parsed >= weekly_plan_start_date and new_due_date_parsed < weekly_plan_end_date:
+                if new_due_date_parsed.day == current_date.day:
+                    print("[DEBUG] Ticket should be moved into the daily plan")
+                    self.trasfer_card_to_daily_column(ticket_id)
                 else:
-                    print("[DEBUG] Ticket should be moved into the year plan")
-                    self.trasfer_card_to_year_column(ticket_id)
-            elif new_due_date_parsed.year > current_date.year:
+                    print("[DEBUG] Ticket should be moved into the weekly plan")
+                    self.trasfer_card_to_weekly_column(ticket_id)
+            elif new_due_date_parsed >= weekly_plan_end_date and new_due_date_parsed.month == int(monthly_plan_date_month):
+                print("[DEBUG] Ticket should be moved into the monthly plan")
+                self.trasfer_card_to_monthly_column(ticket_id)
+            else :
                 print("[DEBUG] Ticket should be moved into the year plan")
                 self.trasfer_card_to_year_column(ticket_id)
         return
@@ -213,7 +216,7 @@ class TrelloApiUtils:
         weekly_end_column_date = self.get_weekly_column_end_date()
 
         new_weekly_column_title = weekly_plan_list_info["name"].replace(weekly_start_column_date, new_start_date)
-        new_weekly_column_title = new_weekly_column_title.replace(weekly_end_column_date, new_end_date)
+        new_weekly_column_title = new_weekly_column_title.replace(weekly_end_column_date + ')', new_end_date + ')')
 
         if re.match(self.trello_weekly_plan_list_name_regexp, new_weekly_column_title):
             self.updateListTitleById(weekly_plan_list_info['id'], new_weekly_column_title)
