@@ -21,6 +21,8 @@ def main():
     PASSED_TRELLO_MONTHLY_PLAN_LIST_NAME_REGEXP = sys.argv[11]
     PASSED_TRELLO_YEAR_PLAN_LIST_NAME_REGEXP = sys.argv[12]
     PASSED_TRELLO_DONE_LIST_NAME_REGEXP = sys.argv[13] 
+    PASSED_TRELLO_SERVER_PORT = int(sys.argv[14])
+    PASSED_TELEGRAM_SERVER_PORT = int(sys.argv[15])
 
     mongodb_utils = MongoDBUtils(PASSED_MONGO_PATH)
     trello_api_utils = TrelloApiUtils(
@@ -46,7 +48,8 @@ def main():
         PASSED_TRELLO_SECURED_ENDPOINT,
         PASSED_TELEGRAM_TOKEN,
         trello_api_utils,
-        mongodb_utils
+        mongodb_utils,
+        PASSED_TRELLO_SERVER_PORT
     )
     tdo.start()
 
@@ -56,7 +59,8 @@ def main():
         PASSED_TELEGRAM_TOKEN, 
         PASSED_TELEGRAM_BOT_INVITE_TOKEN,
         trello_api_utils,
-        mongodb_utils
+        mongodb_utils,
+        PASSED_TELEGRAM_SERVER_PORT
     )
     teledo.start()
     

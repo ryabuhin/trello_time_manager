@@ -1,7 +1,6 @@
 # Trello Time Manager
 
-This is a project for improving my own productivity using tools like Trello Dashboards and Telegram.  
-Trello dashboards is used for tracking, planning and saving of my personal activity and Telegram is used to alert me about different changes on dashboards.
+This is an open source project for improving personal time management productivity using tools like Trello Dashboards and Telegram. Trello dashboard is used for tracking, planning and saving of personal activity and Telegram is used to alert about different changes on dashboards. Today, in the development process, there is a functionality for predicting and assigning existing tasks for a year, a month, a week using neural networks. This is necessary to better organize tasks and increase productivity without involving the human factor.
 
 ## Getting Started
 
@@ -42,7 +41,9 @@ For correct work of application it's necessary to prepare the following configur
     "telegram_token": "<TELEGRAM TOKEN>",
     "telegram_bot_invite_token": "<TELEGRAM BOT INVITE TOKEN>",
     "server_listen_interface": "<0.0.0.0 OR SPECIFIC IPv4 INTERFACE TO LISTEN TRAFFIC>",
-    "mongo_path": "<MONGO_DB URL WITH PROVIDED CREDENTIALS>"
+    "mongo_path": "<MONGO_DB URL WITH PROVIDED CREDENTIALS>",
+    "trello_server_port": "<TRELLO LOCAL SERVER PORT>",
+    "telegram_server_port": "<TELEGRAM LOCAL SERVER PORT>"
 }
 ```
 
@@ -63,7 +64,9 @@ Here is an example of a working **./bot_config.json**:
     "telegram_token": "8456306476:d9793d93a401713a7933d93a4882f085617",
     "telegram_bot_invite_token": "74d0892b265892b1ec493f198ffba",
     "server_listen_interface": "0.0.0.0",
-    "mongo_path": "mongodb://iam:admin@127.0.0.1:27017/lukeskywalker"
+    "mongo_path": "mongodb://iam:admin@127.0.0.1:27017/lukeskywalker",
+    "trello_server_port": "8444",
+    "telegram_server_port": "8443"
 }
 ```
 
@@ -77,13 +80,12 @@ docker-compose -f ./infra-compose up -d
 ```
 
 * Run application by provided shell script:
-
 ```
 bash ./run_bot.sh
+# or
+chmod +x ./run_bot.sh && ./run_bot.sh
 ```
 
 ## Authors
 
-* **Valentyn Riabukhin** - *Project owner* - [personal website link](http://valentine-riabukhin.pro)
-
-See also the list of [contributors](http://valentine-riabukhin.pro) who participated in this project.
+* **Valentyn Riabukhin** - *a project owner* - [personal website link](http://valentine-riabukhin.pro)

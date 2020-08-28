@@ -18,6 +18,8 @@ trello_weekly_plan_list_name_regexp="$(cat ${CONFIG_DIR_PATH}/bot_config.json | 
 trello_monthly_plan_list_name_regexp="$(cat ${CONFIG_DIR_PATH}/bot_config.json | jq -r .trello_monthly_plan_list_name_regexp)"
 trello_year_plan_list_name_regexp="$(cat ${CONFIG_DIR_PATH}/bot_config.json | jq -r .trello_year_plan_list_name_regexp)"
 trello_done_list_name_regexp="$(cat ${CONFIG_DIR_PATH}/bot_config.json | jq -r .trello_done_list_name_regexp)"
+trello_server_port="$(cat ${CONFIG_DIR_PATH}/bot_config.json | jq -r .trello_server_port)"
+telegram_server_port="$(cat ${CONFIG_DIR_PATH}/bot_config.json | jq -r .telegram_server_port)"
 
 # generate new SSL certificates
 cert_dir="${script_path}/trello_bot/certs"
@@ -35,7 +37,7 @@ cat "${cert_dir}/trello_bot.pem" >> "${cert_dir}/trello_bot_bundle.pem"
 printf "\n[INFO/BASH] SSL certificates were successfully generated\n"
 
 # register telegram webhook
-curl -F "url=https://${host_machine}:8443/${telegram_token}" -s \
+curl -F "url=https://${host_machine}:${telegram_server_port}/${telegram_token}" -s \
     -F "certificate=@${cert_dir}/trello_bot_bundle.pem" \
     "https://api.telegram.org/bot${telegram_token}/setWebhook" \
     | jq .
@@ -54,7 +56,7 @@ found_board_id=$(echo "$found_board" | jq -r .id)
 # register trello webhook
 (sleep 2s && curl -XPOST "https://api.trello.com/1/tokens/${trello_token}/webhooks" -s \
     -H "Content-Type: application/json" \
-    -d "{ \"key\": \"${trello_key}\", \"callbackURL\": \"http://${host_machine}:8444/${trello_secured_enpoint}\", 
+    -d "{ \"key\": \"${trello_key}\", \"callbackURL\": \"http://${host_machine}:${trello_server_port}/${trello_secured_enpoint}\", 
         \"idModel\":\"${found_board_id}\", \"description\": \"${trello_dashboard_fullname} Dashboard Webhook for host: ${host_machine}\" }" | jq .) &
 
 cd ${script_path}/trello_bot && python3 ./trello_bot_main.py \
@@ -70,4 +72,6 @@ cd ${script_path}/trello_bot && python3 ./trello_bot_main.py \
  "${trello_weekly_plan_list_name_regexp}"\
  "${trello_monthly_plan_list_name_regexp}"\
  "${trello_year_plan_list_name_regexp}"\
- "${trello_done_list_name_regexp}"
+ "${trello_done_list_name_regexp}"\
+ "${trello_server_port}"\
+ "${telegram_server_port}"
