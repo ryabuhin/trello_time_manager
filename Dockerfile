@@ -8,10 +8,9 @@ pip install schedule && \
 pip install pymongo
 
 ENV TZ='Europe/Kiev'
-ENV HOST='127.0.0.1'
 ENV CONFIG_DIR_PATH='/root/trello/configs'
 
 COPY ./trello_bot/ /root/trello/trello_bot/
 COPY ./run_bot.sh /root/trello/
 
-ENTRYPOINT bash /root/trello/run_bot.sh $HOST
+ENTRYPOINT bash /root/trello/run_bot.sh

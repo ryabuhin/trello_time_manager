@@ -4,7 +4,6 @@ import json
 
 class TelegramActivityHandler(BaseHTTPRequestHandler):
 
-    invite_code = "5d8b34e459cde2f531c3f4214d81e86afefc9033"
 
     start_command_message = "Hi! I'm smart bot and I'll help you to stay tuned for your Trello board. \
     \n\rJust type '/register' and specify user filter to receive notifications from me. I can notife you about: \
@@ -24,9 +23,6 @@ class TelegramActivityHandler(BaseHTTPRequestHandler):
         chat_id = str(telegram_payload_info['message']['chat']['id'])
         incoming_msg = str(telegram_payload_info['message']['text'])
         print("[DEBUG] Received the next JSON payload: \n{}".format(json.dumps(telegram_payload_info, indent = 2)))
-
-        # Write to Danya via telegram bot ;))
-        # self.server.telegram_api_utils.send_message('262647694', str(telegram_payload_info['message']['text']))
 
         isItCommandReceived = False
         for field in telegram_payload_info['message']:
@@ -59,7 +55,7 @@ class TelegramActivityHandler(BaseHTTPRequestHandler):
         telegram_users_activity_log = self.server.mongodb_utils.findTelegramUserActivityLogByChatId(chat_id)
         # collect data for /register command and substeps
         if telegram_users_activity_log['last_event'] == '/register':
-            if incoming_msg == TelegramActivityHandler.invite_code:
+            if incoming_msg == self.server.telegram_bot_invite_token:
                 self.server.telegram_api_utils.send_message(
                     chat_id, 
                     "Thank you, you have successfully logged in!\nPlease, enter your trello username:"
@@ -82,7 +78,7 @@ class TelegramActivityHandler(BaseHTTPRequestHandler):
         elif telegram_users_activity_log['last_event'] == '/subscribe' and self.is_current_user_active(chat_id): 
             self.server.telegram_api_utils.send_message(chat_id, "The subscription was successful. "
                 + "Now I will automatically notify you about changes in accordance with your settings " + u'\U0001F916')
-            # BAD BAD BAD
+            # TODO: should be refactored here
             trello_username = self.server.mongodb_utils.findUserTelegramTrelloAssignmentByChatId(chat_id)['trello_username']
             result_subscription = 'ALL' if incoming_msg.lower() == 'all' else incoming_msg
             self.upsert_user_telegram_trello_assignment(chat_id, trello_username, [result_subscription], True)

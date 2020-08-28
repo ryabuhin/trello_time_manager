@@ -1,5 +1,3 @@
-import requests
-import re
 import schedule
 import time
 from datetime import datetime, timedelta
@@ -11,48 +9,42 @@ from services.trello_api_utils import TrelloApiUtils
 # For example, every day at 00:00 AM move all cards from 'Daily Plan'
 # column to 'Weekly Plan' and the same for 'Weekly' to 'Monthly'
 class TrelloDashboardCollectorScheduler(Thread):
+    
 
-    TRELLO_BOARD_NAME='Productivity'
-
-    def __init__(self, trello_key: str, trello_token: str):
+    def __init__(self, trello_api_utils):
         Thread.__init__(self)
-        self.trello_key = trello_key
-        self.trello_token = trello_token
+        self.trello_api_utils = trello_api_utils
         schedule.every().day.at('00:00').do(self.moveTickets)
+        # move all tickets with assigned dates into corresponding columns 
+        schedule.every().day.at("00:10").do(self.trello_api_utils.transfer_tickets_to_corresponding_columns_by_its_due_dates)
+        schedule.every().day.at("12:00").do(self.trello_api_utils.transfer_tickets_to_corresponding_columns_by_its_due_dates)
 
     def moveTickets(self):
-        trelloApiUtils = TrelloApiUtils(trello_key = self.trello_key, trello_token = self.trello_token)
-
-        board_id = trelloApiUtils.getSpecificBoardIdByName(TrelloDashboardCollectorScheduler.TRELLO_BOARD_NAME)
-        daily_plan_list_info = trelloApiUtils.getSpecificListInfoByNameRegexp(board_id, '^Daily Plan ')
-        weekly_plan_list_info = trelloApiUtils.getSpecificListInfoByNameRegexp(board_id, '^Weekly Plan ')
-
         # move all cards from 'Daily Plan' list into 'Weekly Plan'
-        for dailyCard in trelloApiUtils.getAllCardsInfoByListId(daily_plan_list_info['id']):
-            trelloApiUtils.transferCardTo(dailyCard['id'], weekly_plan_list_info['id'])
-            
-        current_day_and_month = "{day}.{month}".format(day = datetime.now().day, month = f"{datetime.now():%m}")
-        daily_column_new_title = "Daily Plan ({today})".format(today = current_day_and_month)
-        # update title for daily column
-        trelloApiUtils.updateListTitleById(daily_plan_list_info['id'], daily_column_new_title)
+        self.trello_api_utils.transfer_all_cards_from_daily_to_weekly_column()
 
-        weekly_column_date_deadline = re.search(r'\([0-9]{1,2}.[0-9]{1,2} - ([0-9]{1,2}.[0-9]{1,2})\)', weekly_plan_list_info['name']).group(1)
+        current_day_and_month = "{day}.{month}".format(day = datetime.now().day, month = f"{datetime.now():%m}")
+        # update title for daily column
+        self.trello_api_utils.update_daily_column_date(current_day_and_month)
+
+        weekly_column_date_deadline = self.trello_api_utils.get_weekly_column_end_date()
         if weekly_column_date_deadline == current_day_and_month: 
-            monthly_plan_list_info = trelloApiUtils.getSpecificListInfoByNameRegexp(board_id, '^Monthly Plan ')
             # move all cards from 'Weekly Plan' list into 'Monthly Plan'
-            for weeklyCard in trelloApiUtils.getAllCardsInfoByListId(weekly_plan_list_info['id']):
-                trelloApiUtils.transferCardTo(weeklyCard['id'], monthly_plan_list_info['id'])
+            self.trello_api_utils.transfer_all_cards_from_weekly_to_monthly_column()
             
             # update title for weekly column
-            weekly_column_new_title = "Weekly Plan ({startDay}.{startMonth} - {endDay}.{endMonth})".format(
-                startDay = datetime.now().day, startMonth = f"{datetime.now():%m}",
-                endDay = (datetime.now() + timedelta(days = 7)).day, endMonth = f"{(datetime.now() + timedelta(days = 7)):%m}"
+            new_weekly_column_start_date = "{startDay}.{startMonth}".format(
+                startDay = datetime.now().day, 
+                startMonth = f"{datetime.now():%m}"
             )
-            trelloApiUtils.updateListTitleById(weekly_plan_list_info['id'], weekly_column_new_title)
+            new_weekly_column_end_date = "{endDay}.{endMonth}".format(
+                endDay = (datetime.now() + timedelta(days = 7)).day, 
+                endMonth = f"{(datetime.now() + timedelta(days = 7)):%m}"
+            )
+            self.trello_api_utils.update_weekly_column_dates(new_weekly_column_start_date, new_weekly_column_end_date)
 
             # update title of monthly column
-            monthly_column_new_title = "Monthly Plan ({newDate})".format(newDate = f"{datetime.now():%m.%y}")
-            trelloApiUtils.updateListTitleById(monthly_plan_list_info['id'], monthly_column_new_title)
+            self.trello_api_utils.update_monthly_column_date("{newDate}".format(newDate = f"{datetime.now():%m.%y}"))
         else:
             print("[INFO] Today isn't the end of the week")
 

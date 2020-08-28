@@ -12,13 +12,32 @@ def main():
     PASSED_TRELLO_KEY = sys.argv[2]
     PASSED_TRELLO_TOKEN = sys.argv[3]
     PASSED_TELEGRAM_TOKEN = sys.argv[4]
-    PASSED_MONGO_PATH = sys.argv[5]
+    PASSED_TELEGRAM_BOT_INVITE_TOKEN = sys.argv[5]
+    PASSED_MONGO_PATH = sys.argv[6]
+    PASSED_TRELLO_SECURED_ENDPOINT = sys.argv[7]
+    PASSED_TRELLO_DASHBOARD_FULLNAME = sys.argv[8]
+    PASSED_TRELLO_DAILY_PLAN_LIST_NAME_REGEXP = sys.argv[9]
+    PASSED_TRELLO_WEEKLY_PLAN_LIST_NAME_REGEXP = sys.argv[10]
+    PASSED_TRELLO_MONTHLY_PLAN_LIST_NAME_REGEXP = sys.argv[11]
+    PASSED_TRELLO_YEAR_PLAN_LIST_NAME_REGEXP = sys.argv[12]
+    PASSED_TRELLO_DONE_LIST_NAME_REGEXP = sys.argv[13] 
+    PASSED_TRELLO_SERVER_PORT = int(sys.argv[14])
+    PASSED_TELEGRAM_SERVER_PORT = int(sys.argv[15])
 
     mongodb_utils = MongoDBUtils(PASSED_MONGO_PATH)
-    trello_api_utils = TrelloApiUtils(trello_key = PASSED_TRELLO_KEY, trello_token = PASSED_TRELLO_TOKEN)
+    trello_api_utils = TrelloApiUtils(
+        PASSED_TRELLO_KEY, 
+        PASSED_TRELLO_TOKEN, 
+        PASSED_TRELLO_DASHBOARD_FULLNAME,
+        PASSED_TRELLO_DAILY_PLAN_LIST_NAME_REGEXP,
+        PASSED_TRELLO_WEEKLY_PLAN_LIST_NAME_REGEXP,
+        PASSED_TRELLO_MONTHLY_PLAN_LIST_NAME_REGEXP,
+        PASSED_TRELLO_YEAR_PLAN_LIST_NAME_REGEXP,
+        PASSED_TRELLO_DONE_LIST_NAME_REGEXP
+    )
 
     # run a trello dashboard collector by scheduling
-    tdas = TrelloDashboardCollectorScheduler(PASSED_TRELLO_KEY, PASSED_TRELLO_TOKEN)
+    tdas = TrelloDashboardCollectorScheduler(trello_api_utils)
     tdas.start()
 
     # run a trello dashboard activity observer
@@ -26,9 +45,11 @@ def main():
         SERVER_LISTEN_INTERFACE,
         PASSED_TRELLO_KEY, 
         PASSED_TRELLO_TOKEN, 
-        PASSED_TELEGRAM_TOKEN, 
-        trello_api_utils, 
-        mongodb_utils
+        PASSED_TRELLO_SECURED_ENDPOINT,
+        PASSED_TELEGRAM_TOKEN,
+        trello_api_utils,
+        mongodb_utils,
+        PASSED_TRELLO_SERVER_PORT
     )
     tdo.start()
 
@@ -36,8 +57,10 @@ def main():
     teledo = TelegramBotObserver(
         SERVER_LISTEN_INTERFACE,
         PASSED_TELEGRAM_TOKEN, 
+        PASSED_TELEGRAM_BOT_INVITE_TOKEN,
         trello_api_utils,
-        mongodb_utils
+        mongodb_utils,
+        PASSED_TELEGRAM_SERVER_PORT
     )
     teledo.start()
     
